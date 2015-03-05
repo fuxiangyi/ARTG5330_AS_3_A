@@ -34,36 +34,146 @@ function dataLoaded(err,rows){
         e.preventDefault();
 
         var year = $(this).data('year');
-        console.log(year);
+
+        rows.sort(function(a,b){
+            //Note: this is called a "comparator" function
+            //which makes sure that the array is sorted from highest to lowest
+            return b[year] - a[year];
+        });
+
+        //Note: this returns positions 0,1,2,3,4 of the "rows" array
+        var top5 = rows.slice(0,5);
+        draw(top5, year);
+
+       // console.log(year);
     });
 }
 
 function draw(rows, year){
-    var topTeams = canvas.selectAll('.team')
-        .data(rows, function(d){ return d.country; })
-        .enter()
-        .append('g')
-        .attr('class', 'team')
-        .attr('transform',function(d,i){
-            //i ranges from 0 to 4
-            return 'translate(' + i*(width/4) + ',' + height/2 + ')';
-        });
-    topTeams
-        .append('circle')
-        .attr('r', function(d){
-            return scaleR(d[year]);
-        })
-    topTeams
+        //.data() produces the update set
+        var topTeams = canvas.selectAll('.team')
+            .data(rows, function(d){ return d.country;});
+
+        //Enter selection
+        var teamsEnter = topTeams.enter()
+            .append('g')
+            .attr('class', 'team')
+            .attr('transform',function(d,i){
+                //i ranges from 0 to 4
+                return 'translate(' + i*(width/4) + ',' + 0 + ')';
+            })
+            .style('opacity',0);
+
+         teamsEnter
+            .append('circle')
+            .attr('r', function(d){
+                return scaleR(d[year]);
+            });
+        teamsEnter
         .append('text')
         .attr('class','team-name')
         .text(function(d){ return d.country; })
-        .attr('y', function(d){ return scaleR(d[year]+20)})
+        .attr('y', function(d){ return scaleR(d[year]+20); })
         .attr('text-anchor','middle');
-    topTeams
+
+        teamsEnter
         .append('text')
         .attr('class','medal-count')
         .text(function(d){ return d[year];})
         .attr('text-anchor','middle');
+
+
+        //Exit
+        var teamsExit = topTeams.exit()
+            .transition('opacity',0)
+            .attr('transform',function(d,i){
+                //i ranges from 0 to 4
+                return 'translate(' + i*(width/4) + ',' + height*2 + ')';
+            })
+            .remove();
+
+
+        //Update -- the append should not in this part
+
+
+    //transition here!
+
+
+    //
+    var teamsTransitions = topTeams .transition() .duration(1000);
+    //teamsTransitions
+    //in the enter part you can see the opacity is 0
+
+    teamsTransitions
+        .attr('transform',function(d,i){
+            //i ranges from 0 to 4
+            return 'translate(' + i*(width/4) + ',' + height/2 + ')';
+        })
+        .style('opacity',1);
+
+    teamsTransitions
+        .select('circle')
+        .attr('r',function(d){
+            console.log(d,scaleR(d[year]));
+            return scaleR(d[year]);
+
+        });
+
+
+
+    //
+    //teamsTransitions
+    //    .attr('transform',function(d,i){
+    //        //i ranges from 0 to 4
+    //        return 'translate(' + i*(width/4) + ',' + height/2 + ')';
+    //    })
+    //    .style('opacity',1);
+
+    //teamsTransitions
+    //    .select('circle')
+    //           .attr('r',function(d){
+    //             console.log(d,scaleR(d[year]));
+    //             return scaleR(d[year]);
+    //
+    //         });
+    teamsTransitions
+        .select('.team-name')
+        .attr('y',function(d){return scaleR(d[year] + 20);});
+
+    teamsTransitions
+        .select('.medal-count')
+        .text(function(d){return d[year]; });
+
+
+
+
+    //how to update the text????? It dosen't work...T^T
+
+
+               //.select('.tname')
+               //.attr('class','team-name')
+               //.text(function(d){ return d.country; })
+               //.attr('y', function(d){ return scaleR(d[year]+20)})
+               //.attr('text-anchor','middle')
+               //
+               //.select('number')
+               //.attr('class','team-name')
+               //.text(function(d){ return d.country; })
+               //.attr('text-anchor','middle');
+    //topTeams.append('text')
+    //    .attr('class','team-name')
+    //    .text(function(d){ return d.country; })
+    //    .attr('y', function(d){ return scaleR(d[year]+20)})
+    //    .attr('text-anchor','middle');
+    //
+    //topTeams.append('text')
+    //    .attr('class','medal-count')
+    //    .text(function(d){ return d[year];})
+    //    .attr('text-anchor','middle');
+
+
+
+
 }
 
 function parse(row){
